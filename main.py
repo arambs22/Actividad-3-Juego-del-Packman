@@ -111,7 +111,6 @@ def move():
     """Move pacman and all ghosts."""
     writer.undo()
     writer.write(state['score'])
-
     clear()
 
     if valid(pacman + aim):
@@ -131,19 +130,30 @@ def move():
     dot(20, 'yellow')
 
     for point, course in ghosts:
-        if valid(point + course):
-            point.move(course)
-        else:
-            options = [
-                vector(5, 0),
-                vector(-5, 0),
-                vector(0, 5),
-                vector(0, -5),
-            ]
-            plan = choice(options)
-            course.x = plan.x
-            course.y = plan.y
+        # Calculate possible moves for each ghost
+        options = [
+            vector(5, 0),   # right
+            vector(-5, 0),  # left
+            vector(0, 5),   # up
+            vector(0, -5),  # down
+        ]
 
+        # Choose the move that brings the ghost closer to Pacman
+        best_move = None
+        best_distance = float('inf')
+
+        for option in options:
+            next_pos = point + option
+            if valid(next_pos):
+                distance = abs(next_pos - pacman)
+                if distance < best_distance:
+                    best_move = option
+                    best_distance = distance
+
+        # Move the ghost towards Pacman
+        if best_move is not None:
+            point.move(best_move)
+        
         up()
         goto(point.x + 10, point.y + 10)
         dot(20, 'red')
