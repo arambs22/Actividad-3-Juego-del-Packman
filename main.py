@@ -14,11 +14,16 @@ from turtle import *
 
 from freegames import floor, vector
 
+# Estado del juego que incluye la puntuación y la posición de Pacman
 state = {'score': 0}
 path = Turtle(visible=False)
 writer = Turtle(visible=False)
+
+# Inicialización de Pacman y su dirección
 aim = vector(5, 0)
 pacman = vector(-40, -80)
+
+# Posiciones y direcciones iniciales de los fantasmas
 ghosts = [
     [vector(-180, 160), vector(5, 0)],
     [vector(-180, -160), vector(0, 5)],
@@ -26,6 +31,7 @@ ghosts = [
     [vector(100, -160), vector(-5, 0)],
 ]
 # fmt: off
+# Definición del mundo en una cuadrícula (20x20) de puntos (1) y paredes (0)
 tiles = [
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
     0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0,
@@ -50,7 +56,7 @@ tiles = [
 ]
 # fmt: on
 
-
+# Función para dibujar un cuadrado en una posición dada
 def square(x, y):
     """Draw square using path at (x, y)."""
     path.up()
@@ -64,7 +70,7 @@ def square(x, y):
 
     path.end_fill()
 
-
+# Calcula el índice en la lista `tiles` según la posición en el mundo
 def offset(point):
     """Return offset of point in tiles."""
     x = (floor(point.x, 20) + 200) / 20
@@ -72,7 +78,7 @@ def offset(point):
     index = int(x + y * 20)
     return index
 
-
+# Verifica si una posición es válida (no es una pared y está dentro del mundo)
 def valid(point):
     """Return True if point is valid in tiles."""
     index = offset(point)
@@ -87,7 +93,7 @@ def valid(point):
 
     return point.x % 20 == 0 or point.y % 20 == 0
 
-
+# Dibuja el mundo inicial basado en la configuración de tiles
 def world():
     """Draw world using path."""
     bgcolor('black')
@@ -106,7 +112,7 @@ def world():
                 path.goto(x + 10, y + 10)
                 path.dot(2, 'white')
 
-
+# Mueve a Pacman y los fantasmas, y verifica colisiones
 def move():
     """Move pacman and all ghosts."""
     writer.undo()
@@ -129,16 +135,17 @@ def move():
     goto(pacman.x + 10, pacman.y + 10)
     dot(20, 'yellow')
 
+    # Mueve a cada fantasma hacia Pacman usando un movimiento inteligente
     for point, course in ghosts:
-        # Calculate possible moves for each ghost
+    # Lista de posibles movimientos
         options = [
-            vector(5, 0),   # right
-            vector(-5, 0),  # left
-            vector(0, 5),   # up
-            vector(0, -5),  # down
+            vector(5, 0),   # derecha
+            vector(-5, 0),  # izquierda
+            vector(0, 5),   # arriba
+            vector(0, -5),  # abajo
         ]
 
-        # Choose the move that brings the ghost closer to Pacman
+        # Selecciona el mejor movimiento para acercarse a Pacman
         best_move = None
         best_distance = float('inf')
 
@@ -150,7 +157,7 @@ def move():
                     best_move = option
                     best_distance = distance
 
-        # Move the ghost towards Pacman
+        # Mueve el fantasma a la posición seleccionada
         if best_move is not None:
             point.move(best_move)
         
@@ -160,20 +167,21 @@ def move():
 
     update()
 
+    # Verifica si algún fantasma ha alcanzado a Pacman (condición de fin de juego)
     for point, course in ghosts:
         if abs(pacman - point) < 20:
-            return
+            return     # Verifica si algún fantasma ha alcanzado a Pacman (condición de fin de juego)
 
     ontimer(move, 40)
 
-
+# Cambia la dirección de Pacman si la dirección es válida
 def change(x, y):
     """Change pacman aim if valid."""
     if valid(pacman + vector(x, y)):
         aim.x = x
         aim.y = y
 
-
+# Configuración inicial del juego
 setup(420, 420, 370, 0)
 hideturtle()
 tracer(False)
